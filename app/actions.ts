@@ -63,9 +63,11 @@ export async function saveCombo(id: string | null, d: Data) {
   ok(error);
   touch();
 }
-export async function cycleCombo(id: string, status: number) {
+/** Grava o status escolhido (idempotente: cliques rápidos não pulam estados). */
+export async function setComboStatus(id: string, status: number) {
   const { sb } = await requireUser();
-  ok((await sb.from("combos").update({ status: (status + 1) % 3 }).eq("id", id)).error);
+  const s = Math.min(2, Math.max(0, Math.round(Number(status)) || 0));
+  ok((await sb.from("combos").update({ status: s }).eq("id", id)).error);
   touch();
 }
 export async function deleteCombo(id: string) {
@@ -112,9 +114,10 @@ export async function saveVideo(id: string | null, d: Data) {
   ok(error);
   touch();
 }
-export async function toggleSeen(id: string, seen: boolean) {
+/** `next` vem da CyclePill: 0 = não visto, 1 = visto. */
+export async function setVideoSeen(id: string, next: number) {
   const { sb } = await requireUser();
-  ok((await sb.from("videos").update({ seen }).eq("id", id)).error);
+  ok((await sb.from("videos").update({ seen: next === 1 }).eq("id", id)).error);
   touch();
 }
 export async function deleteVideo(id: string) {

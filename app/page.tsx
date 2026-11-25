@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getAll } from "@/lib/data";
+import { getData } from "@/lib/data";
 import { computeStats, nextStep } from "@/lib/stats";
 import { ROSTER } from "@/lib/constants";
 import FocusBox from "@/components/FocusBox";
@@ -9,7 +9,7 @@ import { ActivityDots } from "@/components/small";
 export const dynamic = "force-dynamic";
 
 export default async function Hoje() {
-  const d = await getAll();
+  const d = await getData(["logs", "combos", "matchups", "focus"]);
   const { sorted, last, wins, topTags } = computeStats(d.logs);
   const step = nextStep(d.logs, d.matchups);
   const maxT = topTags[0]?.[1] ?? 1;

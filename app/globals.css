@@ -137,3 +137,13 @@ th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: 
 .lk { font-size: 12px; border-top: 1px dashed var(--line); padding-top: 4px; word-break: break-word; }
 .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 16px; border-radius: 8px; z-index: 30; font-size: 14px; }
 @media (prefers-reduced-motion: no-preference) { .pill, button { transition: border-color 0.15s, background 0.15s; } }
+
+/* esqueleto de carregamento */
+.skel { display: grid; gap: 18px; }
+.sk { background: var(--panel2); border-radius: 10px; }
+.sk-title { height: 28px; width: min(240px, 60%); }
+.sk-card { height: 140px; }
+@media (prefers-reduced-motion: no-preference) {
+  .sk { animation: sk-pulse 1.2s ease-in-out infinite; }
+  @keyframes sk-pulse { 50% { opacity: 0.55; } }
+}

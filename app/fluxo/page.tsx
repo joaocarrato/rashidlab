@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAll } from "@/lib/data";
+import { getData } from "@/lib/data";
 import { createFlow, seedFlows } from "@/app/actions";
 import FlowEditor from "@/components/FlowEditor";
 import { ActionButton } from "@/components/small";
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Fluxo({ searchParams }: { searchParams: Promise<{ id?: string; ro?: string }> }) {
   const { id, ro } = await searchParams;
-  const { flows, combos, videos } = await getAll();
+  const { flows, combos, videos } = await getData(["flows", "combos", "videos"]);
 
   if (!flows.length) {
     return (

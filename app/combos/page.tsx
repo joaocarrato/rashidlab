@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAll } from "@/lib/data";
+import { getData } from "@/lib/data";
 import { SITS, STATUS } from "@/lib/constants";
-import { cycleCombo, deleteCombo, saveCombo, seedCombos } from "@/app/actions";
+import { deleteCombo, saveCombo, seedCombos, setComboStatus } from "@/app/actions";
 import FormModal, { type Field } from "@/components/FormModal";
+import CyclePill from "@/components/CyclePill";
 import { ActionButton, CopyButton } from "@/components/small";
 
 export const metadata: Metadata = { title: "Combos" };
@@ -35,7 +36,7 @@ export default async function Combos({ searchParams }: { searchParams: Promise<{
   const sp = await searchParams;
   const sit = sp.sit && SITS.includes(sp.sit) ? sp.sit : "Todos";
   const st = sp.st && STATUS.includes(sp.st) ? sp.st : "Todos";
-  const { combos } = await getAll();
+  const { combos } = await getData(["combos"]);
   const list = combos
     .filter((c) => (sit === "Todos" || c.sit === sit) && (st === "Todos" || STATUS[c.status] === st))
     .sort((a, b) => SITS.indexOf(a.sit) - SITS.indexOf(b.sit) || a.title.localeCompare(b.title));
@@ -64,7 +65,8 @@ export default async function Combos({ searchParams }: { searchParams: Promise<{
             <article className="panel" key={c.id}>
               <div className="row" style={{ gap: 8 }}>
                 <span className="tag">{c.sit}</span><span className="spacer" />
-                <ActionButton className={`pill s${c.status}`} action={cycleCombo.bind(null, c.id, c.status)}>{STATUS[c.status]}</ActionButton>
+                <CyclePill labels={STATUS} classes={["s0", "s1", "s2"]} value={c.status}
+                  onChange={setComboStatus.bind(null, c.id)} />
               </div>
               <h3 style={{ marginTop: 8 }}>{c.title}</h3>
               {c.notation ? (

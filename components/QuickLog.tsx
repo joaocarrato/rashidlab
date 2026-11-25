@@ -13,8 +13,10 @@ export default function QuickLog({ defaultOpp }: { defaultOpp: string }) {
   const [msg, setMsg] = useState("");
 
   function win() {
+    // Mostra a confirmação na hora; se o servidor recusar, a mensagem vira o erro.
+    setMsg(`Vitória registrada contra ${opp}`);
     start(async () => {
-      try { await saveLog(null, { opp, result: "W", tags: [], date: localDate() }); setMsg(`Vitória registrada contra ${opp}`); }
+      try { await saveLog(null, { opp, result: "W", tags: [], date: localDate() }); }
       catch (e) { setMsg(e instanceof Error ? e.message : "Não salvou"); }
     });
   }

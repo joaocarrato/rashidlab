@@ -20,10 +20,15 @@ export async function createClient() {
   });
 }
 
-/** Cliente + usuário logado; lança erro se não houver sessão. */
+/**
+ * Cliente + usuário logado; lança erro se não houver sessão.
+ * getClaims valida o JWT localmente (chaves assimétricas do Supabase), sem ir ao
+ * servidor de Auth a cada chamada como o getUser fazia.
+ */
 export async function requireUser() {
   const sb = await createClient();
-  const { data, error } = await sb.auth.getUser();
-  if (error || !data.user) throw new Error("Sessão expirada. Entre de novo.");
-  return { sb, user: data.user };
+  const { data, error } = await sb.auth.getClaims();
+  const id = data?.claims?.sub;
+  if (error || !id) throw new Error("Sessão expirada. Entre de novo.");
+  return { sb, user: { id } };
 }

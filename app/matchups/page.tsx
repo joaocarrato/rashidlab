@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAll } from "@/lib/data";
+import { getData } from "@/lib/data";
 import { computeStats } from "@/lib/stats";
 import { ROSTER, slug } from "@/lib/constants";
 
@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Matchups" };
 export const dynamic = "force-dynamic";
 
 export default async function Matchups() {
-  const d = await getAll();
+  const d = await getData(["logs", "matchups"]);
   const { losses } = computeStats(d.logs);
   const rec = (n: string) => {
     const l = d.logs.filter((x) => x.opp === n);

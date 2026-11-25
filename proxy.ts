@@ -29,16 +29,19 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const { data } = await supabase.auth.getUser();
+  // getClaims verifica o JWT localmente (renovando a sessão se precisar), em vez de
+  // consultar o servidor de Auth em toda navegação como o getUser fazia.
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
   const isPublic = PUBLIC.some((p) => pathname === p || pathname.startsWith(p + "/"));
 
-  if (!data.user && !isPublic) {
+  if (!userId && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";
     return NextResponse.redirect(url);
   }
-  if (data.user && pathname === "/login") {
+  if (userId && pathname === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAll } from "@/lib/data";
+import { getData } from "@/lib/data";
 import { computeStats } from "@/lib/stats";
 import { ROSTER, isChar, slug } from "@/lib/constants";
 import { createMatchupFlow } from "@/app/actions";
@@ -21,7 +21,7 @@ function Block({ t, x, edit }: { t: string; x?: string; edit: string }) {
 
 export default async function Antes({ searchParams }: { searchParams: Promise<{ opp?: string }> }) {
   const { opp } = await searchParams;
-  const d = await getAll();
+  const d = await getData(["logs", "matchups", "flows", "videos", "combos"]);
   const { sorted } = computeStats(d.logs);
   const name = opp && isChar(opp) ? opp : sorted[0]?.opp ?? ROSTER[0];
   const m = d.matchups.find((x) => x.char === name);

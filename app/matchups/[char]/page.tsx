@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAll } from "@/lib/data";
+import { getData } from "@/lib/data";
 import { charFromSlug } from "@/lib/constants";
 import MatchupForm from "@/components/MatchupForm";
 
@@ -16,7 +16,7 @@ export default async function MatchupPage({ params }: { params: Promise<{ char: 
   const { char } = await params;
   const name = charFromSlug(char);
   if (!name) notFound();
-  const d = await getAll();
+  const d = await getData(["logs", "matchups", "videos"]);
   const m = d.matchups.find((x) => x.char === name);
   const logs = d.logs.filter((l) => l.opp === name);
   const vids = d.videos.filter((v) => v.char === name);

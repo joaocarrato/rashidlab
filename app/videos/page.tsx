@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAll } from "@/lib/data";
+import { getData } from "@/lib/data";
 import { ROSTER, VTAGS } from "@/lib/constants";
-import { deleteVideo, saveVideo, toggleSeen } from "@/app/actions";
+import { deleteVideo, saveVideo, setVideoSeen } from "@/app/actions";
 import FormModal, { type Field } from "@/components/FormModal";
-import { ActionButton } from "@/components/small";
+import CyclePill from "@/components/CyclePill";
 
 export const metadata: Metadata = { title: "Vídeos" };
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ const FIELDS: Field[] = [
 export default async function Videos({ searchParams }: { searchParams: Promise<{ tag?: string }> }) {
   const { tag } = await searchParams;
   const cur = tag && VTAGS.includes(tag) ? tag : "Todos";
-  const { videos } = await getAll();
+  const { videos } = await getData(["videos"]);
   const list = videos.filter((v) => cur === "Todos" || v.tag === cur);
   return (
     <>
@@ -42,9 +42,8 @@ export default async function Videos({ searchParams }: { searchParams: Promise<{
               <div className="row" style={{ gap: 8 }}>
                 <span className="tag">{v.tag}</span>{v.char && <span className="tag">{v.char}</span>}
                 <span className="spacer" />
-                <ActionButton className={`pill ${v.seen ? "s2" : ""}`} action={toggleSeen.bind(null, v.id, !v.seen)}>
-                  {v.seen ? "Visto" : "Não visto"}
-                </ActionButton>
+                <CyclePill labels={["Não visto", "Visto"]} classes={["", "s2"]} value={v.seen ? 1 : 0}
+                  onChange={setVideoSeen.bind(null, v.id)} />
               </div>
               <h3 style={{ marginTop: 8 }}>{v.title || v.url}</h3>
               {v.ts && <div className="small mono muted">no minuto {v.ts}</div>}

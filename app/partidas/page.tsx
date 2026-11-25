@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getAll } from "@/lib/data";
+import { getData } from "@/lib/data";
 import { ROSTER, TAGS } from "@/lib/constants";
 import { deleteLog, saveLog } from "@/app/actions";
 import FormModal, { type Field } from "@/components/FormModal";
@@ -18,7 +18,7 @@ const FIELDS: Field[] = [
 ];
 
 export default async function Partidas() {
-  const { logs } = await getAll();
+  const { logs } = await getData(["logs"]);
   return (
     <>
       <div className="sec-head">

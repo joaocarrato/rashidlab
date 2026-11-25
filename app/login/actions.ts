@@ -26,7 +26,13 @@ export async function signIn(_prev: LoginState, form: FormData): Promise<LoginSt
     email,
     options: { emailRedirectTo: `${origin}/auth/callback`, shouldCreateUser: true },
   });
-  if (error) return { error: "Não consegui enviar o link. Tente de novo em instantes." };
+  if (error) {
+    // Aparece em Vercel > Deployments > Logs; ajuda a achar a causa real.
+    console.error("signInWithOtp falhou:", error.status, error.code, error.message);
+    if (error.status === 429 || error.code === "over_email_send_rate_limit")
+      return { error: "Limite de e-mails do Supabase atingido. Espere cerca de 1 hora ou entre com senha." };
+    return { error: `Não consegui enviar o link (${error.code ?? error.status ?? "erro"}). Tente de novo em instantes.` };
+  }
   return { message: "Link enviado. Abra o e-mail neste mesmo navegador." };
 }
 
