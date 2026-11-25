@@ -13,6 +13,7 @@ const TABS = [
   ["/fluxo", "Fluxograma"],
   ["/videos", "Vídeos"],
   ["/backup", "Backup"],
+  ["/conta", "Conta"],
 ] as const;
 
 const BARE = ["/login", "/setup", "/auth"];

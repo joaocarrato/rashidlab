@@ -30,6 +30,20 @@ export async function signIn(_prev: LoginState, form: FormData): Promise<LoginSt
   return { message: "Link enviado. Abra o e-mail neste mesmo navegador." };
 }
 
+export async function signInPassword(_prev: LoginState, form: FormData): Promise<LoginState> {
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const password = String(form.get("password") ?? "");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || !password) return { error: "Digite e-mail e senha." };
+
+  const allowed = (process.env.ALLOWED_EMAIL ?? "").trim().toLowerCase();
+  if (allowed && email !== allowed) return { error: "E-mail ou senha incorretos." };
+
+  const sb = await createClient();
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) return { error: "E-mail ou senha incorretos." };
+  redirect("/");
+}
+
 export async function signOut() {
   const sb = await createClient();
   await sb.auth.signOut();
