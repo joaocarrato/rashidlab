@@ -29,9 +29,9 @@ export default function QuickLog({ defaultOpp }: { defaultOpp: string }) {
         {ROSTER.map((r) => <option key={r}>{r}</option>)}
       </select>
       <div className="row" style={{ marginTop: 12, flexWrap: "nowrap" }}>
-        <button className="primary" style={{ flex: 1 }} onClick={win} disabled={pending}>Venci</button>
+        <button className="primary big" style={{ flex: 1 }} onClick={win} disabled={pending}>Venci</button>
         <FormModal
-          title={`Derrota para ${opp}: o que custou?`} trigger="Perdi" triggerClass="" saveLabel="Registrar"
+          title={`Derrota para ${opp}: o que custou?`} trigger="Perdi" triggerClass="big danger" saveLabel="Registrar"
           hidden={{ opp, result: "L", date: localDate() }}
           fields={[
             { k: "tags", l: "O que mais te custou (marque 0 a 2)", t: "tags", o: TAGS },
@@ -42,7 +42,7 @@ export default function QuickLog({ defaultOpp }: { defaultOpp: string }) {
       </div>
       <div className="small" role="status" style={{ minHeight: 20, marginTop: 8, color: "var(--win)" }}>{msg}</div>
       <div className="row" style={{ marginTop: 4, gap: 4 }}>
-        <Link className="btn ghost" href={`/antes?opp=${encodeURIComponent(opp)}`}>Ver antes da partida</Link>
+        <Link className="btn ghost" href={`/antes?opp=${encodeURIComponent(opp)}`}>Ver antes da luta</Link>
       </div>
     </section>
   );

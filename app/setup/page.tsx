@@ -1,7 +1,7 @@
 export default function SetupPage() {
   return (
     <div className="wrap" style={{ maxWidth: 640, paddingTop: 48 }}>
-      <h1 style={{ fontSize: 28 }}>Falta ligar o banco</h1>
+      <h1 style={{ fontSize: 36 }}>Falta ligar o banco</h1>
       <p className="muted" style={{ margin: "8px 0 20px" }}>
         O site já está de pé, mas ainda não encontrou as chaves do Supabase.
       </p>

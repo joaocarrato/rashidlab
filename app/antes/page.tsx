@@ -1,13 +1,14 @@
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getData } from "@/lib/data";
 import { computeStats } from "@/lib/stats";
-import { ROSTER, isChar, slug } from "@/lib/constants";
+import { ROSTER, charColor, isChar, slug } from "@/lib/constants";
 import { createMatchupFlow } from "@/app/actions";
 import FlowView from "@/components/FlowView";
 import { ActionButton, OppSelect } from "@/components/small";
 
-export const metadata: Metadata = { title: "Antes da partida" };
+export const metadata: Metadata = { title: "Antes da luta" };
 export const dynamic = "force-dynamic";
 
 function Block({ t, x, edit }: { t: string; x?: string; edit: string }) {
@@ -34,9 +35,13 @@ export default async function Antes({ searchParams }: { searchParams: Promise<{ 
 
   return (
     <>
-      <div className="sec-head">
-        <h2>Antes da partida</h2><span className="spacer" />
-        <div style={{ width: 220 }}><label htmlFor="pre">Oponente</label><OppSelect value={name} /></div>
+      <div className="vs" style={{ "--c": charColor(name) } as CSSProperties}>
+        <div className="side me"><span className="lbl">Você</span>{d.main}</div>
+        <div className="x">VS</div>
+        <div className="side them"><span className="lbl">Oponente</span>{name}</div>
+      </div>
+      <div className="row" style={{ marginBottom: 16, alignItems: "flex-end" }}>
+        <div style={{ width: 220 }}><label htmlFor="pre">Trocar oponente</label><OppSelect value={name} /></div>
       </div>
       <p className="muted" style={{ margin: "0 0 16px" }}>
         {ls.length ? `Você tem ${w}V e ${ls.length - w}D contra ${name}.` : `Nenhuma partida registrada contra ${name}.`}{" "}

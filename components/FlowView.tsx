@@ -1,4 +1,5 @@
 import type { Combo, FlowNode, Video } from "@/lib/types";
+import Notation from "./Notation";
 
 export const NODE_LABEL = { s: "Situação", d: "Decisão", a: "Ação" } as const;
 
@@ -11,7 +12,7 @@ export function LinkChip({ node, combos, videos }: { node: FlowNode; combos: Com
     return (
       <div className="lk">
         <span className="tag">Combo</span> {c.title}
-        {c.notation && <div className="mono">{c.notation}</div>}
+        {c.notation && <Notation text={c.notation} />}
       </div>
     );
   }
@@ -44,7 +45,7 @@ function Node({ n, root, combos, videos }: { n: FlowNode; root?: boolean; combos
   );
 }
 
-/** Árvore somente leitura (usada em "Antes da partida" e no modo leitura). */
+/** Árvore somente leitura (usada em "Antes da luta" e no modo leitura). */
 export default function FlowView({ root, combos, videos }: { root: FlowNode; combos: Combo[]; videos: Video[] }) {
   return (
     <div className="flowbox">

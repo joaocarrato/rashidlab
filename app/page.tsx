@@ -19,7 +19,13 @@ export default async function Hoje() {
 
   return (
     <>
-      <FocusBox initial={d.focus} />
+      <div className="hero">
+        <span className="name">{d.main}</span>
+        <span className="sub">
+          {d.logs.length ? `${d.logs.length} partidas registradas` : "nenhuma partida registrada ainda"} · {d.combos.length} combos
+        </span>
+      </div>
+      <FocusBox key={d.main} initial={d.focus} />
       <div className="cols" style={{ marginTop: 28 }}>
         <div>
           <section>
@@ -54,19 +60,24 @@ export default async function Hoje() {
           </section>
         </div>
         <div>
-          <QuickLog defaultOpp={defaultOpp} />
+          <QuickLog key={d.main} defaultOpp={defaultOpp} />
           <section className="panel" style={{ marginTop: 16 }}>
-            <div className="sec-head"><h3>Últimas 20 partidas</h3></div>
-            <div className="stat" style={{ color: rate !== null && rate >= 50 ? "var(--win)" : "var(--loss)" }}>
-              {rate !== null ? `${rate}%` : "–"}
+            <div className="sec-head" style={{ marginBottom: 8 }}><h3>Últimas 20 partidas</h3></div>
+            <div className="row" style={{ alignItems: "baseline", gap: 10 }}>
+              <span className="stat" style={{ color: rate === null ? "var(--muted)" : rate >= 50 ? "var(--win)" : "var(--loss)" }}>
+                {rate !== null ? `${rate}%` : "–"}
+              </span>
+              <span className="small muted">{wins}V · {last.length - wins}D</span>
             </div>
-            <div className="small muted" style={{ marginBottom: 14 }}>{wins}V · {last.length - wins}D</div>
+            <div className={`bar hp ${rate !== null && rate < 30 ? "low" : ""}`} style={{ margin: "10px 0 16px" }}>
+              <i style={{ width: `${rate ?? 0}%` }} />
+            </div>
             <ActivityDots dates={d.logs.map((l) => l.played_on)} />
           </section>
           <section className="panel">
-            <div className="sec-head"><h3>Combos confiáveis</h3></div>
-            <div className="stat">{conf}<span className="muted" style={{ fontSize: 16 }}>/{d.combos.length}</span></div>
-            <div className="bar" style={{ marginTop: 10 }}>
+            <div className="sec-head" style={{ marginBottom: 8 }}><h3>Combos confiáveis</h3></div>
+            <div className="stat">{conf}<span className="muted" style={{ fontSize: 22 }}>/{d.combos.length}</span></div>
+            <div className="bar" style={{ marginTop: 12 }}>
               <i style={{ width: `${d.combos.length ? (conf / d.combos.length) * 100 : 0}%` }} />
             </div>
           </section>

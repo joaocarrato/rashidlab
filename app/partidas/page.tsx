@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getData } from "@/lib/data";
-import { ROSTER, TAGS } from "@/lib/constants";
+import type { CSSProperties } from "react";
+import { ROSTER, TAGS, charColor } from "@/lib/constants";
 import { deleteLog, saveLog } from "@/app/actions";
 import FormModal, { type Field } from "@/components/FormModal";
 import { CopyButton } from "@/components/small";
@@ -18,11 +19,11 @@ const FIELDS: Field[] = [
 ];
 
 export default async function Partidas() {
-  const { logs } = await getData(["logs"]);
+  const { logs, main } = await getData(["logs"]);
   return (
     <>
       <div className="sec-head">
-        <h2>Partidas</h2><span className="spacer" />
+        <h2>Partidas</h2><span className="muted small">jogando de {main}</span><span className="spacer" />
         <FormModal title="Registrar partida" triggerClass="primary" trigger="Registrar partida" saveLabel="Registrar"
           fields={FIELDS} values={{ result: "L" }} onSubmit={saveLog.bind(null, null)} />
       </div>
@@ -34,8 +35,8 @@ export default async function Partidas() {
               {logs.slice(0, 100).map((l) => (
                 <tr key={l.id}>
                   <td className="small">{l.played_on.split("-").reverse().join("/")}</td>
-                  <td>{l.opp}</td>
-                  <td><b className={l.result === "W" ? "win" : "loss"}>{l.result === "W" ? "V" : "D"}</b></td>
+                  <td><span className="opp" style={{ "--c": charColor(l.opp) } as CSSProperties}>{l.opp}</span></td>
+                  <td><b className={`res ${l.result === "W" ? "win" : "loss"}`}>{l.result === "W" ? "V" : "D"}</b></td>
                   <td>
                     <div className="tags">{l.tags.map((t) => <span className="tag" key={t}>{t}</span>)}</div>
                     {l.lesson && <div className="small" style={{ marginTop: 4 }}>{l.lesson}</div>}
@@ -51,7 +52,7 @@ export default async function Partidas() {
           </table>
         </div>
       ) : (
-        <div className="empty">Nenhuma partida ainda. Depois de cada derrota: oponente, o que custou, uma frase. Só isso.</div>
+        <div className="empty">Nenhuma partida de {main} ainda. Depois de cada derrota: oponente, o que custou, uma frase. Só isso.</div>
       )}
     </>
   );

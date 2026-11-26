@@ -6,6 +6,7 @@ import { deleteCombo, saveCombo, seedCombos, setComboStatus } from "@/app/action
 import FormModal, { type Field } from "@/components/FormModal";
 import CyclePill from "@/components/CyclePill";
 import { ActionButton, CopyButton } from "@/components/small";
+import Notation from "@/components/Notation";
 
 export const metadata: Metadata = { title: "Combos" };
 export const dynamic = "force-dynamic";
@@ -13,7 +14,7 @@ export const dynamic = "force-dynamic";
 const FIELDS: Field[] = [
   { k: "title", l: "Nome", ph: "Ex.: BnB meio da tela" },
   { k: "sit", l: "Situação", t: "select", o: SITS },
-  { k: "notation", l: "Sequência (notação numérica)", t: "textarea", ph: "Ex.: 2MP > 5HP xx ...", mono: true },
+  { k: "notation", l: "Sequência (notação numérica)", t: "textarea", ph: "Ex.: 2MP > 5HP xx 236HK, DR 5MP", mono: true },
   { k: "dmg", l: "Dano", t: "number" },
   { k: "cost", l: "Custo (Drive / Super)", ph: "Ex.: 1 barra de Drive" },
   { k: "status", l: "Status", t: "select", o: STATUS.map((s, i): [string, string] => [String(i), s]) },
@@ -36,7 +37,7 @@ export default async function Combos({ searchParams }: { searchParams: Promise<{
   const sp = await searchParams;
   const sit = sp.sit && SITS.includes(sp.sit) ? sp.sit : "Todos";
   const st = sp.st && STATUS.includes(sp.st) ? sp.st : "Todos";
-  const { combos } = await getData(["combos"]);
+  const { combos, main } = await getData(["combos"]);
   const list = combos
     .filter((c) => (sit === "Todos" || c.sit === sit) && (st === "Todos" || STATUS[c.status] === st))
     .sort((a, b) => SITS.indexOf(a.sit) - SITS.indexOf(b.sit) || a.title.localeCompare(b.title));
@@ -45,7 +46,7 @@ export default async function Combos({ searchParams }: { searchParams: Promise<{
   return (
     <>
       <div className="sec-head">
-        <h2>Combos</h2><span className="spacer" />
+        <h2>Combos e techs</h2><span className="muted small">de {main}</span><span className="spacer" />
         {!combos.length && <ActionButton action={seedCombos}>Carregar situações modelo</ActionButton>}
         <FormModal title="Novo combo" trigger="Novo combo" triggerClass="primary" fields={FIELDS}
           values={{ sit: SITS[0], status: "0" }} onSubmit={saveCombo.bind(null, null)} />
@@ -57,7 +58,7 @@ export default async function Combos({ searchParams }: { searchParams: Promise<{
       {!combos.length ? (
         <div className="empty">
           Organize por situação (anti-aéreo, punição, canto…) e não por personagem.<br />
-          As situações modelo vêm sem sequência: você preenche com o que o seu Rashid usa.
+          As situações modelo vêm sem sequência: você preenche com o que o seu {main} usa.
         </div>
       ) : list.length ? (
         <div className="grid">
@@ -70,7 +71,7 @@ export default async function Combos({ searchParams }: { searchParams: Promise<{
               </div>
               <h3 style={{ marginTop: 8 }}>{c.title}</h3>
               {c.notation ? (
-                <><div className="notation mono">{c.notation}</div><CopyButton text={c.notation} /></>
+                <><Notation text={c.notation} /><CopyButton text={c.notation} label="Copiar notação" /></>
               ) : (
                 <div className="notation muted small">sequência a preencher</div>
               )}

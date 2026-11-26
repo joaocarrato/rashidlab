@@ -21,12 +21,12 @@ const FIELDS: Field[] = [
 export default async function Videos({ searchParams }: { searchParams: Promise<{ tag?: string }> }) {
   const { tag } = await searchParams;
   const cur = tag && VTAGS.includes(tag) ? tag : "Todos";
-  const { videos } = await getData(["videos"]);
+  const { videos, main } = await getData(["videos"]);
   const list = videos.filter((v) => cur === "Todos" || v.tag === cur);
   return (
     <>
       <div className="sec-head">
-        <h2>Vídeos</h2><span className="spacer" />
+        <h2>Vídeos</h2><span className="muted small">de {main}</span><span className="spacer" />
         <FormModal title="Salvar vídeo" trigger="Salvar vídeo" triggerClass="primary" fields={FIELDS}
           values={{ tag: "Aula" }} onSubmit={saveVideo.bind(null, null)} />
       </div>

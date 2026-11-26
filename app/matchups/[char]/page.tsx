@@ -1,8 +1,9 @@
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getData } from "@/lib/data";
-import { charFromSlug } from "@/lib/constants";
+import { charColor, charFromSlug } from "@/lib/constants";
 import MatchupForm from "@/components/MatchupForm";
 
 export const dynamic = "force-dynamic";
@@ -24,18 +25,28 @@ export default async function MatchupPage({ params }: { params: Promise<{ char: 
 
   return (
     <>
-      <div className="sec-head">
-        <h2>Matchup: {name}</h2><span className="spacer" />
-        <Link className="btn" href={`/antes?opp=${encodeURIComponent(name)}`}>Ver antes da partida</Link>
+      <div className="vs" style={{ "--c": charColor(name) } as CSSProperties}>
+        <div className="side me"><span className="lbl">Você</span>{d.main}</div>
+        <div className="x">VS</div>
+        <div className="side them"><span className="lbl">Oponente</span>{name}</div>
       </div>
-      <p className="muted" style={{ margin: "0 0 16px" }}>
-        {logs.length ? `${w}V · ${logs.length - w}D` : "Nenhuma partida registrada contra esse personagem."}
-        {logs.slice(0, 8).map((l) => (
-          <b key={l.id} className={l.result === "W" ? "win" : "loss"}> {l.result === "W" ? "V" : "D"}</b>
-        ))}
-      </p>
+      <div className="row" style={{ marginBottom: 18 }}>
+        <span className="muted">
+          {logs.length ? `${w}V · ${logs.length - w}D` : "Nenhuma partida registrada contra esse personagem."}
+        </span>
+        {logs.length > 0 && (
+          <span className="streak" aria-label="Últimos resultados">
+            {logs.slice(0, 10).map((l) => (
+              <b key={l.id} className={`res ${l.result === "W" ? "win" : "loss"}`}>{l.result === "W" ? "V" : "D"}</b>
+            ))}
+          </span>
+        )}
+        <span className="spacer" />
+        <Link className="btn" href={`/antes?opp=${encodeURIComponent(name)}`}>Ver antes da luta</Link>
+      </div>
       <div className="cols">
-        <MatchupForm char={name} initial={{ plan: m?.plan ?? "", avoid: m?.avoid ?? "", tools: m?.tools ?? "", notes: m?.notes ?? "" }} />
+        <MatchupForm key={d.main} char={name}
+          initial={{ plan: m?.plan ?? "", avoid: m?.avoid ?? "", tools: m?.tools ?? "", notes: m?.notes ?? "" }} />
         <div>
           {logs.some((l) => l.lesson) && (
             <section>

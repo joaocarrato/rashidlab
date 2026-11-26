@@ -105,7 +105,7 @@ export default function FlowEditor({
       {!readOnly && (
         <p className="muted small" style={{ margin: "0 0 4px" }}>
           Edite o texto direto no nó. “+” cria um ramo, o rótulo no topo troca entre Situação, Decisão e Ação, e o seletor liga
-          o nó a um combo ou vídeo. Defina o Matchup para o fluxograma aparecer em “Antes da partida”.
+          o nó a um combo ou vídeo. Defina o Matchup para o fluxograma aparecer em “Antes da luta”.
           {pending ? " Salvando…" : ""}
         </p>
       )}

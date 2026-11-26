@@ -10,12 +10,12 @@ export const dynamic = "force-dynamic";
 
 export default async function Fluxo({ searchParams }: { searchParams: Promise<{ id?: string; ro?: string }> }) {
   const { id, ro } = await searchParams;
-  const { flows, combos, videos } = await getData(["flows", "combos", "videos"]);
+  const { flows, combos, videos, main } = await getData(["flows", "combos", "videos"]);
 
   if (!flows.length) {
     return (
       <>
-        <div className="sec-head"><h2>Fluxograma</h2></div>
+        <div className="sec-head"><h2>Fluxograma</h2><span className="muted small">de {main}</span></div>
         <div className="empty">
           Um fluxograma aqui é uma árvore: situação → decisão → ação. Serve para o que você faz quando o oponente faz X.
           <div className="row">
@@ -31,7 +31,7 @@ export default async function Fluxo({ searchParams }: { searchParams: Promise<{ 
   return (
     <>
       <div className="sec-head">
-        <h2>Fluxograma</h2><span className="spacer" />
+        <h2>Fluxograma</h2><span className="muted small">de {main}</span><span className="spacer" />
         <ActionButton action={createFlow}>Novo fluxograma</ActionButton>
       </div>
       <div className="row" style={{ gap: 6, marginBottom: 12 }}>

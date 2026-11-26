@@ -31,14 +31,14 @@ export default function BackupPage() {
       <div className="grid">
         <section className="panel">
           <h3 style={{ marginBottom: 6 }}>Exportar</h3>
-          <p className="muted small">Baixa tudo em um arquivo JSON. Guarde de vez em quando.</p>
+          <p className="muted small">Baixa tudo, de todos os personagens, em um arquivo JSON. Guarde de vez em quando.</p>
           <a className="btn primary" href="/api/backup">Baixar backup</a>
         </section>
         <section className="panel">
           <h3 style={{ marginBottom: 6 }}>Importar</h3>
           <p className="muted small">
-            Aceita o backup do Rashid Lab antigo (artifact) e os arquivos exportados aqui. Importar adiciona os dados;
-            não apaga o que já existe, então importar duas vezes duplica.
+            Aceita os arquivos exportados aqui e os backups antigos do Rashid Lab (que entram como dados do Rashid).
+            Importar adiciona os dados; não apaga o que já existe, então importar duas vezes duplica.
           </p>
           <input type="file" accept="application/json,.json" onChange={onFile} disabled={busy} aria-label="Arquivo de backup" />
           <div className="small" role="status" style={{ marginTop: 8 }}>{busy ? "Importando…" : msg}</div>

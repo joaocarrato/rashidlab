@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/supabase/server";
+import { MAIN_COOKIE, getContext, mainCookieValue, requireMain } from "@/lib/main";
 import { SITS, TAGS, VTAGS, isChar } from "@/lib/constants";
 import { SEED_COMBOS, SEED_FLOWS, N, cloneN, sanitizeNode } from "@/lib/flow";
 import type { FlowNode } from "@/lib/types";
@@ -20,9 +22,32 @@ function ok(error: { message: string } | null) {
   if (error) throw new Error(error.message);
 }
 
+/* ---------- personagens que você joga ---------- */
+const YEAR = 60 * 60 * 24 * 365;
+
+/** Troca o personagem ativo (e adiciona à sua lista se ainda não estiver). */
+export async function pickMain(char: string, goHome = false) {
+  if (!isChar(char)) throw new Error("Personagem inválido");
+  const { sb, userId, mains } = await getContext();
+  if (!userId) throw new Error("Sessão expirada. Entre de novo.");
+  if (!mains.includes(char)) ok((await sb.from("mains").insert({ char })).error);
+  (await cookies()).set(MAIN_COOKIE, mainCookieValue(char), { maxAge: YEAR, path: "/", sameSite: "lax", httpOnly: true });
+  touch();
+  if (goHome) redirect("/");
+}
+
+/** Tira da lista. Os dados ficam guardados e voltam se você adicionar de novo. */
+export async function removeMain(char: string) {
+  const { sb } = await requireUser();
+  ok((await sb.from("mains").delete().eq("char", char)).error);
+  const jar = await cookies();
+  if (jar.get(MAIN_COOKIE)?.value === mainCookieValue(char)) jar.delete(MAIN_COOKIE);
+  touch();
+}
+
 /* ---------- partidas ---------- */
 export async function saveLog(id: string | null, d: Data) {
-  const { sb } = await requireUser();
+  const { sb, main } = await requireMain();
   const opp = s(d.opp, 40);
   if (!isChar(opp)) throw new Error("Oponente inválido");
   const row: Data = {
@@ -33,7 +58,9 @@ export async function saveLog(id: string | null, d: Data) {
     code: s(d.code, 40),
   };
   if (isDate(d.date)) row.played_on = d.date;
-  const { error } = id ? await sb.from("logs").update(row).eq("id", id) : await sb.from("logs").insert(row);
+  const { error } = id
+    ? await sb.from("logs").update(row).eq("id", id)
+    : await sb.from("logs").insert({ ...row, main });
   ok(error);
   touch();
 }
@@ -45,7 +72,7 @@ export async function deleteLog(id: string) {
 
 /* ---------- combos ---------- */
 export async function saveCombo(id: string | null, d: Data) {
-  const { sb } = await requireUser();
+  const { sb, main } = await requireMain();
   const title = s(d.title, 120);
   if (!title) throw new Error("Dê um nome ao combo");
   const dmg = d.dmg === null || d.dmg === "" || d.dmg === undefined ? null : Math.round(Number(d.dmg));
@@ -59,7 +86,9 @@ export async function saveCombo(id: string | null, d: Data) {
     video: httpsUrl(d.video),
     notes: s(d.notes, 1000),
   };
-  const { error } = id ? await sb.from("combos").update(row).eq("id", id) : await sb.from("combos").insert(row);
+  const { error } = id
+    ? await sb.from("combos").update(row).eq("id", id)
+    : await sb.from("combos").insert({ ...row, main });
   ok(error);
   touch();
 }
@@ -76,29 +105,29 @@ export async function deleteCombo(id: string) {
   touch();
 }
 export async function seedCombos() {
-  const { sb } = await requireUser();
-  const { count } = await sb.from("combos").select("id", { count: "exact", head: true });
+  const { sb, main } = await requireMain();
+  const { count } = await sb.from("combos").select("id", { count: "exact", head: true }).eq("main", main);
   if (count) return;
-  ok((await sb.from("combos").insert(SEED_COMBOS.map(([title, sit]) => ({ title, sit })))).error);
+  ok((await sb.from("combos").insert(SEED_COMBOS.map(([title, sit]) => ({ title, sit, main })))).error);
   touch();
 }
 
 /* ---------- matchups ---------- */
 export async function saveMatchup(char: string, d: Data) {
-  const { sb, user } = await requireUser();
+  const { sb, user, main } = await requireMain();
   if (!isChar(char)) throw new Error("Personagem inválido");
   const row = {
-    user_id: user.id, char,
+    user_id: user.id, main, char,
     plan: s(d.plan, 1500), avoid: s(d.avoid, 1500), tools: s(d.tools, 1500), notes: s(d.notes, 2000),
     updated_at: new Date().toISOString(),
   };
-  ok((await sb.from("matchups").upsert(row, { onConflict: "user_id,char" })).error);
+  ok((await sb.from("matchups").upsert(row, { onConflict: "user_id,main,char" })).error);
   touch();
 }
 
 /* ---------- vídeos ---------- */
 export async function saveVideo(id: string | null, d: Data) {
-  const { sb } = await requireUser();
+  const { sb, main } = await requireMain();
   const url = httpsUrl(d.url);
   if (!url) throw new Error("Use um link que comece com https://");
   const char = s(d.char, 40);
@@ -110,7 +139,9 @@ export async function saveVideo(id: string | null, d: Data) {
     ts: s(d.ts, 20),
     note: s(d.note, 1000),
   };
-  const { error } = id ? await sb.from("videos").update(row).eq("id", id) : await sb.from("videos").insert(row);
+  const { error } = id
+    ? await sb.from("videos").update(row).eq("id", id)
+    : await sb.from("videos").insert({ ...row, main });
   ok(error);
   touch();
 }
@@ -139,20 +170,20 @@ export async function saveFlow(id: string, d: { title: string; char: string; roo
   touch();
 }
 export async function createFlow() {
-  const { sb } = await requireUser();
+  const { sb, main } = await requireMain();
   const { data, error } = await sb
-    .from("flows").insert({ title: "Novo fluxograma", root: N("Situação inicial", "s") }).select("id").single();
+    .from("flows").insert({ title: "Novo fluxograma", main, root: N("Situação inicial", "s") }).select("id").single();
   ok(error);
   touch();
   redirect(`/fluxo?id=${data!.id}`);
 }
 export async function duplicateFlow(id: string) {
   const { sb } = await requireUser();
-  const { data: f, error } = await sb.from("flows").select("title,char,root").eq("id", id).single();
+  const { data: f, error } = await sb.from("flows").select("title,char,main,root").eq("id", id).single();
   ok(error);
   const { data, error: e2 } = await sb
     .from("flows")
-    .insert({ title: `${f!.title} (cópia)`, char: f!.char, root: cloneN(sanitizeNode(f!.root)) })
+    .insert({ title: `${f!.title} (cópia)`, char: f!.char, main: f!.main, root: cloneN(sanitizeNode(f!.root)) })
     .select("id").single();
   ok(e2);
   touch();
@@ -165,28 +196,31 @@ export async function deleteFlow(id: string) {
   redirect("/fluxo");
 }
 export async function seedFlows() {
-  const { sb } = await requireUser();
-  const { count } = await sb.from("flows").select("id", { count: "exact", head: true });
+  const { sb, main } = await requireMain();
+  const { count } = await sb.from("flows").select("id", { count: "exact", head: true }).eq("main", main);
   if (count) return;
-  ok((await sb.from("flows").insert(SEED_FLOWS())).error);
+  ok((await sb.from("flows").insert(SEED_FLOWS().map((f) => ({ ...f, main })))).error);
   touch();
 }
 /** Cria um fluxograma para o matchup a partir do plano geral (ou de um esqueleto). */
 export async function createMatchupFlow(char: string) {
-  const { sb } = await requireUser();
+  const { sb, main } = await requireMain();
   if (!isChar(char)) throw new Error("Personagem inválido");
-  const { data: base } = await sb.from("flows").select("root,title,char").order("created_at");
+  const { data: base } = await sb.from("flows").select("root,title,char").eq("main", main).order("created_at");
   const general = (base ?? []).find((f) => !f.char && String(f.title).startsWith("Neutro")) ?? (base ?? []).find((f) => !f.char);
   const root = general
     ? cloneN(sanitizeNode(general.root))
     : N("Neutro", "s", [N("Oponente faz X?", "d", [N("Minha resposta: [preencher]", "a")])]);
-  ok((await sb.from("flows").insert({ title: `Plano vs ${char}`, char, root })).error);
+  ok((await sb.from("flows").insert({ title: `Plano vs ${char}`, char, main, root })).error);
   touch();
 }
 
 /* ---------- foco ---------- */
 export async function saveFocus(text: string) {
-  const { sb, user } = await requireUser();
-  ok((await sb.from("focus").upsert({ user_id: user.id, text: s(text, 400), updated_at: new Date().toISOString() })).error);
+  const { sb, user, main } = await requireMain();
+  ok((await sb.from("focus").upsert(
+    { user_id: user.id, main, text: s(text, 400), updated_at: new Date().toISOString() },
+    { onConflict: "user_id,main" },
+  )).error);
   touch();
 }

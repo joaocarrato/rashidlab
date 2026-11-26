@@ -2,6 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { signIn, signInPassword, type LoginState } from "./actions";
+import { Logo } from "@/components/Header";
+import { APP } from "@/lib/constants";
 
 export default function LoginPage() {
   const [pw, pwAction, pwPending] = useActionState<LoginState, FormData>(signInPassword, {});
@@ -9,13 +11,12 @@ export default function LoginPage() {
   const [showLink, setShowLink] = useState(false);
 
   return (
-    <div className="wrap" style={{ maxWidth: 420, paddingTop: 72 }}>
-      <h1 style={{ fontSize: 32 }}>
-        Rashid <span style={{ color: "var(--accent)" }}>Lab</span>
-      </h1>
-      <p className="muted" style={{ margin: "8px 0 24px" }}>Entre com seu e-mail e senha.</p>
+    <div className="wrap gate">
+      <h1><Logo /></h1>
+      <p className="tag-line">{APP.tagline}</p>
 
       <form action={pwAction} className="panel" style={{ display: "grid", gap: 14 }}>
+        <h3>Entrar</h3>
         <div>
           <label htmlFor="email">E-mail</label>
           <input id="email" name="email" type="email" autoComplete="username" required />
@@ -24,7 +25,7 @@ export default function LoginPage() {
           <label htmlFor="password">Senha</label>
           <input id="password" name="password" type="password" autoComplete="current-password" required />
         </div>
-        <button className="primary" disabled={pwPending}>{pwPending ? "Entrando…" : "Entrar"}</button>
+        <button className="primary big" disabled={pwPending}>{pwPending ? "Entrando…" : "Entrar"}</button>
         {pw.error && <div className="loss" role="alert">{pw.error}</div>}
       </form>
 
