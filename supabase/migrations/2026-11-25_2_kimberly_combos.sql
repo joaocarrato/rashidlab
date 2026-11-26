@@ -7,19 +7,29 @@
 -- Notação: ">" liga um golpe no outro, "~" é continuação (target combo ou seguimento do 236K),
 -- j. = no ar, KK/PP = versão OD (2 barras de Drive), (PC) = punish counter.
 -- "+47F" no título = vantagem em frames no fim do combo (tempo até o oponente poder agir).
+--
+-- Tudo fica dentro de um único bloco "do": o SQL Editor do Supabase grava cada comando
+-- separado, então tabelas temporárias entre comandos sumiriam. Num bloco só, ou entra tudo
+-- ou nada (se der erro no meio, nada fica pela metade).
 
-begin;
-
-do $$
+do $mig$
+declare
+  v_user record;
+  v_flow record;
+  v_combo record;
+  r text;
 begin
-  if to_regclass('public.mains') is null then
-    raise exception 'Rode antes a migration 2026-11-25_1_multi_personagem.sql';
-  end if;
-end $$;
+
+if to_regclass('public.mains') is null then
+  raise exception 'Rode antes a migration 2026-11-25_1_multi_personagem.sql';
+end if;
+
+drop table if exists pg_temp.kim_combos;
+drop table if exists pg_temp.kim_flows;
 
 create temp table kim_combos (
   k text primary key, ord int, title text, sit text, notation text, dmg int, cost text, notes text
-) on commit drop;
+);
 
 insert into kim_combos (k, ord, title, sit, notation, dmg, cost, notes) values
 -- ===== Execução (meio da tela) =====
@@ -206,7 +216,7 @@ cross join kim_combos c
 on conflict (id) do nothing;
 
 -- Fluxogramas. "lk": "c:@chave" vira o link para o combo daquele usuário.
-create temp table kim_flows (k text primary key, ord int, title text, root text) on commit drop;
+create temp table kim_flows (k text primary key, ord int, title text, root text);
 
 insert into kim_flows (k, ord, title, root) values
 ('oki-vantagem', 1, 'Oki: quanto tempo eu tenho?', $j$
@@ -279,29 +289,24 @@ $j$),
 ]}
 $j$);
 
-do $$
-declare
-  u record;
-  f record;
-  c record;
-  r text;
-begin
-  for u in select distinct user_id from public.mains loop
-    for f in select * from kim_flows order by ord loop
-      r := f.root;
-      for c in select k from kim_combos loop
-        r := replace(r, '"c:@' || c.k || '"', '"c:' || md5(u.user_id::text || ':kimberly:' || c.k)::uuid || '"');
+  for v_user in select distinct user_id from public.mains loop
+    for v_flow in select * from kim_flows order by ord loop
+      r := v_flow.root;
+      for v_combo in select k from kim_combos loop
+        r := replace(r, '"c:@' || v_combo.k || '"', '"c:' || md5(v_user.user_id::text || ':kimberly:' || v_combo.k)::uuid || '"');
       end loop;
       if r like '%"c:@%' then
-        raise exception 'Fluxograma % aponta para combo que não existe', f.k;
+        raise exception 'Fluxograma % aponta para combo que não existe', v_flow.k;
       end if;
       insert into public.flows (id, user_id, main, title, char, root, created_at, updated_at)
-      values (md5(u.user_id::text || ':kimberly-flow:' || f.k)::uuid, u.user_id, 'Kimberly',
-              f.title, '', r::jsonb,
-              now() + f.ord * interval '1 millisecond', now())
+      values (md5(v_user.user_id::text || ':kimberly-flow:' || v_flow.k)::uuid, v_user.user_id, 'Kimberly',
+              v_flow.title, '', r::jsonb,
+              now() + v_flow.ord * interval '1 millisecond', now())
       on conflict (id) do nothing;
     end loop;
   end loop;
-end $$;
 
-commit;
+drop table kim_combos;
+drop table kim_flows;
+
+end $mig$;
