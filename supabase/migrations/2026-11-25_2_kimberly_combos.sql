@@ -2,7 +2,7 @@
 -- Rode DEPOIS de 2026-11-25_1_multi_personagem.sql (precisa da tabela "mains" e da coluna "main").
 -- Cole no SQL Editor do Supabase e execute. Pode rodar de novo sem duplicar nada:
 -- cada combo/fluxograma tem um id fixo por usuário e o que já existe é pulado.
--- Vale para todo usuário que já escolheu pelo menos um personagem; a Kimberly entra na lista dele.
+-- Vale para todo usuário cadastrado no site (auth.users); a Kimberly entra na lista dele.
 --
 -- Notação: ">" liga um golpe no outro, "~" é continuação (target combo ou seguimento do 236K),
 -- j. = no ar, KK/PP = versão OD (2 barras de Drive), (PC) = punish counter.
@@ -202,7 +202,7 @@ insert into kim_combos (k, ord, title, sit, notation, dmg, cost, notes) values
 
 -- A Kimberly entra na lista de personagens de quem já usa o site
 insert into public.mains (user_id, char)
-select distinct m.user_id, 'Kimberly' from public.mains m
+select u.id, 'Kimberly' from auth.users u
 on conflict do nothing;
 
 -- Combos: id fixo por usuário + combo, então rodar de novo não duplica
@@ -211,7 +211,7 @@ select md5(u.user_id::text || ':kimberly:' || c.k)::uuid, u.user_id, 'Kimberly',
        c.title, c.sit, c.notation, c.dmg, c.cost, 0,
        'https://www.youtube.com/watch?v=L77BwLi1q6g', c.notes,
        now() + c.ord * interval '1 millisecond'
-from (select distinct user_id from public.mains) u
+from (select id as user_id from auth.users) u
 cross join kim_combos c
 on conflict (id) do nothing;
 
@@ -289,7 +289,7 @@ $j$),
 ]}
 $j$);
 
-  for v_user in select distinct user_id from public.mains loop
+  for v_user in select id as user_id from auth.users loop
     for v_flow in select * from kim_flows order by ord loop
       r := v_flow.root;
       for v_combo in select k from kim_combos loop
@@ -310,3 +310,9 @@ drop table kim_combos;
 drop table kim_flows;
 
 end $mig$;
+
+-- Resumo: deve mostrar 49 combos e 5 fluxogramas por usuário
+select u.email,
+       (select count(*) from public.combos c where c.user_id = u.id and c.main = 'Kimberly') as combos_kimberly,
+       (select count(*) from public.flows f where f.user_id = u.id and f.main = 'Kimberly') as fluxogramas_kimberly
+from auth.users u;
