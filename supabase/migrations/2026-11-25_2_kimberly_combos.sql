@@ -200,6 +200,17 @@ insert into kim_combos (k, ord, title, sit, notation, dmg, cost, notes) values
  'DP (bloqueado) > HP (PC) > 236K ~ LK > j.MP > j.214KK > 22MP', 3051, '2 barras de Drive',
  'Vale depois dos setups 22MP+HP +11F e +9F. Bloqueou o DP: HP pega punish counter.');
 
+-- Apaga os 12 combos modelo vazios ("Carregar situações modelo") da Kimberly.
+-- Só some o que ainda está intocado: sem sequência, dano, custo, vídeo nem notas.
+delete from public.combos
+where main = 'Kimberly'
+  and notation = '' and dmg is null and cost = '' and video = '' and notes = ''
+  and title in ('BnB meterless', 'BnB com Drive Rush', 'Confirmação de anti-aéreo',
+                'Punição leve (início de combo)', 'Punição pesada (movimento recuperável)',
+                'Confirmação após Drive Impact (parede)', 'Dano máximo no canto',
+                'Combo com Super Art 1', 'Combo com Super Art 2', 'Combo com Super Art 3',
+                'Continuação após parry perfeito', 'Knockdown + setup básico');
+
 -- A Kimberly entra na lista de personagens de quem já usa o site
 insert into public.mains (user_id, char)
 select u.id, 'Kimberly' from auth.users u

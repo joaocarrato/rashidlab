@@ -67,18 +67,3 @@ export const SEED_FLOWS = () => [
     ]),
   },
 ];
-
-export const SEED_COMBOS: [string, string][] = [
-  ["BnB meterless", "Neutro/abertura"],
-  ["BnB com Drive Rush", "Drive Rush"],
-  ["Confirmação de anti-aéreo", "Anti-aéreo"],
-  ["Punição leve (início de combo)", "Punição"],
-  ["Punição pesada (movimento recuperável)", "Punição"],
-  ["Confirmação após Drive Impact (parede)", "Drive Impact"],
-  ["Dano máximo no canto", "Canto"],
-  ["Combo com Super Art 1", "Super Art"],
-  ["Combo com Super Art 2", "Super Art"],
-  ["Combo com Super Art 3", "Super Art"],
-  ["Continuação após parry perfeito", "Pós-parry"],
-  ["Knockdown + setup básico", "Okizeme"],
-];

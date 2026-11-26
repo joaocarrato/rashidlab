@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/supabase/server";
 import { MAIN_COOKIE, getContext, mainCookieValue, requireMain } from "@/lib/main";
 import { SITS, TAGS, VTAGS, isChar } from "@/lib/constants";
-import { SEED_COMBOS, SEED_FLOWS, N, cloneN, sanitizeNode } from "@/lib/flow";
+import { SEED_FLOWS, N, cloneN, sanitizeNode } from "@/lib/flow";
 import type { FlowNode } from "@/lib/types";
 
 type Data = Record<string, unknown>;
@@ -102,13 +102,6 @@ export async function setComboStatus(id: string, status: number) {
 export async function deleteCombo(id: string) {
   const { sb } = await requireUser();
   ok((await sb.from("combos").delete().eq("id", id)).error);
-  touch();
-}
-export async function seedCombos() {
-  const { sb, main } = await requireMain();
-  const { count } = await sb.from("combos").select("id", { count: "exact", head: true }).eq("main", main);
-  if (count) return;
-  ok((await sb.from("combos").insert(SEED_COMBOS.map(([title, sit]) => ({ title, sit, main })))).error);
   touch();
 }
 

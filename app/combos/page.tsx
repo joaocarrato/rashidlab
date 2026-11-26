@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getData } from "@/lib/data";
 import { SITS, STATUS } from "@/lib/constants";
-import { deleteCombo, saveCombo, seedCombos, setComboStatus } from "@/app/actions";
+import { deleteCombo, saveCombo, setComboStatus } from "@/app/actions";
 import FormModal, { type Field } from "@/components/FormModal";
 import CyclePill from "@/components/CyclePill";
-import { ActionButton, CopyButton } from "@/components/small";
+import { CopyButton } from "@/components/small";
 import Notation from "@/components/Notation";
 
 export const metadata: Metadata = { title: "Combos" };
@@ -47,7 +47,6 @@ export default async function Combos({ searchParams }: { searchParams: Promise<{
     <>
       <div className="sec-head">
         <h2>Combos e techs</h2><span className="muted small">de {main}</span><span className="spacer" />
-        {!combos.length && <ActionButton action={seedCombos}>Carregar situações modelo</ActionButton>}
         <FormModal title="Novo combo" trigger="Novo combo" triggerClass="primary" fields={FIELDS}
           values={{ sit: SITS[0], status: "0" }} onSubmit={saveCombo.bind(null, null)} />
       </div>
@@ -57,8 +56,7 @@ export default async function Combos({ searchParams }: { searchParams: Promise<{
       </div>
       {!combos.length ? (
         <div className="empty">
-          Organize por situação (anti-aéreo, punição, canto…) e não por personagem.<br />
-          As situações modelo vêm sem sequência: você preenche com o que o seu {main} usa.
+          Nenhum combo de {main} ainda. Use &quot;Novo combo&quot; e organize por situação (anti-aéreo, punição, canto…).
         </div>
       ) : list.length ? (
         <div className="grid">
